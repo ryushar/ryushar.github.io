@@ -1,0 +1,103 @@
+---
+title: "Rendering particles in ryuten.io"
+publishedAt: "2024-04-12"
+summary: "How I optimised the rendering of particle element in ryuten.io"
+---
+
+There are many different type of elements in [Ryuten](https://ryuten.io), one of them being the particle type. And sometimes, there can be thousands of these particles visible to a player.
+
+<Image
+  alt={`Ryuten.io`}
+  src={`/content/ryuten-particle-rendering-hero.png`}
+  width={2055}
+  height={1197}
+/>
+
+Under the hood, Ryuten uses [Pixi.js](https://pixijs.com/) for rendering the game visuals. Pixi.js is a
+free, open-source 2D rendering system that can be used to create interactive graphics,
+HTML5 games, and animated websites. It provides an easy to use API which helps
+in speeding up the development process (compared to writing raw WebGL code).
+
+In version 5, Pixi.js released the support for a [mid-level API](https://medium.com/goodboy-digital/pixijs-v5-lands-5e112d84e510). This feature gives us a lot more control and allows us to write even more performant code for certain sections of the game.
+
+### A very simple expanation of how WebGL renders stuff
+
+- You provide some vertices
+- These vertices are processed and then used to create primitives
+- These primitives are then rasterised into fragments
+- Each pixel in the fragment is then processed to output the final pixel data
+
+<Image
+  alt={`How WebGL works illustration`}
+  src={`/content/how-webgl-works-simplified.png`}
+  width={2937}
+  height={939}
+/>
+
+### Rendering particles using Pixi.js normally
+
+- Pixi.js uses 2 triangles to create a rectangle shaped mesh having 4 vertices and then overlays it with a texture.
+
+  <Image
+    alt={`Rectangle made up of 2 triangles`}
+    src={`/content/ryuten-particle-rendering-1.png`}
+    width={256}
+    height={256}
+  />
+
+- Let us assume that we are rendering 50px x 50px particle.
+- Pixel count = 50 \* 50 = 2500 pixels in total
+- So, the vertex shader deals with 4 vertices and the fragment shader deals with 2.5k pixels.
+
+### Rendering with PIXI.JS normally vs using the low level API
+
+- Since we have more control using the mid-level API, instead of a rectangle we are going to use a hexagon i.e, 4 triangles and 6 vertices.
+
+  <Image
+    alt={`Hexagon made up of 4 triangles`}
+    src={`/content/ryuten-particle-rendering-2.png`}
+    width={256}
+    height={256}
+  />
+
+- Let us assume that we are rendering 50px x 50px particle.
+- Pixel count = ((3 x √3) / 2) x (25 x 25) = ~1624 pixels in total
+- This time, the vertex shader has to deal with 6 vertices and the fragment shader deals with 1.6k pixels.
+
+_Note: No texture clipping takes place while rendering the partice as in this case, there is always extra headroom available in the texture due to some reasons related to mipmapping._
+
+### Comparision
+
+- While the vertices increased by a small count of 2, the pixels decreased from 2.5k to 1.6k (roughy 36% decrement)
+- Since there didn’t seem to be an accurate way available to measure the GPU stats, I decided to disable v-sync and remove FPS limit from the browser and let it render as many frames per second as possible using both the methods.
+- With the normal method, the game was able to get **~160 FPS** on an average
+  <Image
+    alt={`Method 1 result`}
+    src={`/content/ryuten-particle-rendering-result-1.png`}
+    width={2560}
+    height={1600}
+  />
+  <Image
+    alt={`Method 1 result fps`}
+    src={`/content/ryuten-particle-fps-1.png`}
+    width={196}
+    height={37}
+  />
+- While by using the mid-level API the game was able to get **~200 FPS** on an average.
+  <Image
+    alt={`Method 2 result`}
+    src={`/content/ryuten-particle-rendering-result-2.png`}
+    width={2560}
+    height={1600}
+  />
+  <Image
+    alt={`Method 2 result fps`}
+    src={`/content/ryuten-particle-fps-2.png`}
+    width={196}
+    height={37}
+  />
+- Both the scenes are exactly the same with roughly 2.5k particles on the screen.
+
+### Conclusion
+
+Using the mid-level API surely does require more work, time and increases maintenance cost, but in return it provides you with more power and control. In this case, we were able to improve our particle rendering system by roughly 25%.
