@@ -139,7 +139,7 @@ export default function Page() {
         </p>
       </div>
       <h1 className="font-medium text-2xl mb-4 tracking-tighter mt-16">
-        My work
+        My work 💻
       </h1>
       <div className="prose prose-neutral dark:prose-invert">
         <p>
