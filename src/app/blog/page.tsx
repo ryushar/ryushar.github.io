@@ -1,3 +1,4 @@
+import FormattedDate from "components/formatted-date";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -36,9 +37,7 @@ export default function BlogPage() {
             <p className="text-neutral-900 dark:text-neutral-100 tracking-tight">
               {post.metadata.title}
             </p>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              {formatDate(post.metadata.publishedAt)}
-            </p>
+            <FormattedDate date={post.metadata.publishedAt} />
           </div>
         </Link>
       ))}

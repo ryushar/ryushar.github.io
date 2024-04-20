@@ -1,5 +1,3 @@
-"use client";
-
 const formatDate = (date: string) => {
   const currentDate = new Date();
   if (!date.includes("T")) {

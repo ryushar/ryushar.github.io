@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { CustomMDX } from "components/mdx";
 import { T_MDXData, getBlogPosts } from "utilities/blog";
 import { formatDate } from "utilities/common";
+import FormattedDate from "components/formatted-date";
 
 export async function generateMetadata({
   params,
@@ -80,9 +81,7 @@ export default function Blog({ params }: { params: T_MDXData }) {
         {post.metadata.title}
       </h1>
       <div className="flex justify-between items-center mt-2 mb-8 text-sm max-w-[650px]">
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          {formatDate(post.metadata.publishedAt)}
-        </p>
+        <FormattedDate date={post.metadata.publishedAt} />
       </div>
       <article className="prose prose-quoteless prose-neutral dark:prose-invert">
         <CustomMDX source={post.content} />
